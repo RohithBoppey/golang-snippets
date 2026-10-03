@@ -9,6 +9,10 @@ type LinkedList struct {
 	length int
 }
 
+func (l *LinkedList) SearchNode(val int) (bool, int, int) {
+	panic("unimplemented")
+}
+
 func (l *LinkedList) AddNode(val int) {
 	// create node and append at the end
 	node := &ListNode{next: nil, val: val}
