@@ -1,5 +1,7 @@
 package linkedlist
 
+import "math"
+
 // single node in a linked list
 type ListNode struct {
 	next *ListNode
@@ -12,3 +14,6 @@ type ListInterface interface {
 	AddNodeDirect(*ListNode)
 	AddNode(val int)
 }
+
+// max neg value allowed
+const MAX_NEGATIVE = math.MinInt
