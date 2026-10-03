@@ -143,6 +143,52 @@ func TestSortedListTailAfterAppend(t *testing.T) {
 	checkList(t, l, []int{1, 2, 3, 10})
 }
 
+func TestSortedListSearchNode(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     []int
+		search    int
+		wantFound bool
+		wantPos   int
+		wantSteps int
+	}{
+		{name: "empty list", input: nil, search: 1, wantFound: false, wantPos: 0, wantSteps: 0},
+		{name: "single, found", input: []int{5}, search: 5, wantFound: true, wantPos: 0, wantSteps: 0},
+		{name: "single, missing", input: []int{5}, search: 3, wantFound: false, wantPos: 1, wantSteps: 1},
+		{name: "first after sorting", input: []int{2, 1, 3}, search: 1, wantFound: true, wantPos: 0, wantSteps: 0},
+		{name: "middle after sorting", input: []int{2, 1, 3}, search: 2, wantFound: true, wantPos: 1, wantSteps: 1},
+		{name: "last after sorting", input: []int{3, 1, 2}, search: 3, wantFound: true, wantPos: 2, wantSteps: 2},
+		{name: "missing walks whole list", input: []int{2, 1, 3}, search: 4, wantFound: false, wantPos: 3, wantSteps: 3},
+		{name: "duplicates, first match wins", input: []int{7, 4, 7}, search: 7, wantFound: true, wantPos: 1, wantSteps: 1},
+		{name: "negative", input: []int{0, -1, 1}, search: -1, wantFound: true, wantPos: 0, wantSteps: 0},
+		{
+			name:  "mixed",
+			input: []int{2, 1, 3, 0, -1, 9, 11, -2},
+			// sorted: -2 -1 0 1 2 3 9 11
+			search: 9, wantFound: true, wantPos: 6, wantSteps: 6,
+		},
+		// the dummy head holds MAX_NEGATIVE; search must never match it
+		{name: "dummy value, empty list", input: nil, search: MAX_NEGATIVE, wantFound: false, wantPos: 0, wantSteps: 0},
+		{name: "dummy value, not inserted", input: []int{1, 2}, search: MAX_NEGATIVE, wantFound: false, wantPos: 2, wantSteps: 2},
+		{name: "dummy value, inserted for real", input: []int{1, MAX_NEGATIVE}, search: MAX_NEGATIVE, wantFound: true, wantPos: 0, wantSteps: 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			l := newSortedList(t)
+			for _, v := range tt.input {
+				l.AddNode(v)
+			}
+
+			found, pos, steps := l.SearchNode(tt.search)
+			if found != tt.wantFound || pos != tt.wantPos || steps != tt.wantSteps {
+				t.Errorf("SearchNode(%d) = (%v, %d, %d), want (%v, %d, %d)",
+					tt.search, found, pos, steps, tt.wantFound, tt.wantPos, tt.wantSteps)
+			}
+		})
+	}
+}
+
 func ExampleSortedList_PrintList() {
 	list, _ := CreateSortedList()
 	for _, v := range []int{3, -1, 2} {

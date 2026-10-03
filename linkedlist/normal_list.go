@@ -9,10 +9,6 @@ type LinkedList struct {
 	length int
 }
 
-func (l *LinkedList) SearchNode(val int) (bool, int, int) {
-	panic("unimplemented")
-}
-
 func (l *LinkedList) AddNode(val int) {
 	// create node and append at the end
 	node := &ListNode{next: nil, val: val}
@@ -40,6 +36,24 @@ func (l *LinkedList) PrintList() {
 		fmt.Printf("%d->", curr.val)
 		curr = curr.next
 	}
+	fmt.Println()
+}
+
+// (found?, pos?, steps?)
+func (l *LinkedList) SearchNode(val int) (bool, int, int) {
+	// search from left to right and see if the val exists or not
+	curr := l.head
+	pos := 0
+	found := false
+	for curr != nil {
+		if curr.val == val {
+			found = true
+			break
+		}
+		curr = curr.next
+		pos += 1
+	}
+	return found, pos, pos
 }
 
 func CreateLinkedList() (ListInterface, error) {
