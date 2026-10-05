@@ -11,7 +11,7 @@ var _ ListInterface = (*SortedList)(nil)
 
 // values walks the list (skipping the dummy head) and returns its values.
 // It stops after length+1 nodes so a broken link can't loop forever.
-func values(t *testing.T, l *SortedList) []int {
+func values(t *testing.T, l *LinkedList) []int {
 	t.Helper()
 
 	var got []int
@@ -25,7 +25,7 @@ func values(t *testing.T, l *SortedList) []int {
 }
 
 // checkList verifies the values, length and tail of l.
-func checkList(t *testing.T, l *SortedList, want []int) {
+func checkList(t *testing.T, l *LinkedList, want []int) {
 	t.Helper()
 
 	if got := values(t, l); !slices.Equal(got, want) {
@@ -75,7 +75,7 @@ func TestCreateSortedList(t *testing.T) {
 	if l.head.next != nil {
 		t.Errorf("head.next = %v, want nil", l.head.next)
 	}
-	checkList(t, l, nil)
+	checkList(t, &l.LinkedList, nil)
 }
 
 func TestSortedListAddNode(t *testing.T) {
@@ -113,7 +113,7 @@ func TestSortedListAddNode(t *testing.T) {
 			for _, v := range tt.input {
 				l.AddNode(v)
 			}
-			checkList(t, l, tt.want)
+			checkList(t, &l.LinkedList, tt.want)
 		})
 	}
 }
@@ -125,7 +125,7 @@ func TestSortedListAddNodeDirect(t *testing.T) {
 	l.AddNodeDirect(&ListNode{val: 2})
 	l.AddNodeDirect(&ListNode{val: 8})
 
-	checkList(t, l, []int{2, 4, 8})
+	checkList(t, &l.LinkedList, []int{2, 4, 8})
 }
 
 func TestSortedListTailAfterAppend(t *testing.T) {
@@ -134,13 +134,13 @@ func TestSortedListTailAfterAppend(t *testing.T) {
 
 	l.AddNode(1)
 	l.AddNode(3)
-	checkList(t, l, []int{1, 3})
+	checkList(t, &l.LinkedList, []int{1, 3})
 
 	l.AddNode(2) // before the tail: tail stays 3
-	checkList(t, l, []int{1, 2, 3})
+	checkList(t, &l.LinkedList, []int{1, 2, 3})
 
 	l.AddNode(10) // after the tail: tail becomes 10
-	checkList(t, l, []int{1, 2, 3, 10})
+	checkList(t, &l.LinkedList, []int{1, 2, 3, 10})
 }
 
 func TestSortedListSearchNode(t *testing.T) {
@@ -189,11 +189,70 @@ func TestSortedListSearchNode(t *testing.T) {
 	}
 }
 
+func TestSortedListDeleteNode(t *testing.T) {
+	tests := []struct {
+		name   string
+		input  []int
+		delete int
+		wantOK bool
+		want   []int
+	}{
+		{name: "empty list", input: nil, delete: 1, wantOK: false, want: nil},
+		{name: "single, found", input: []int{7}, delete: 7, wantOK: true, want: nil},
+		{name: "single, missing", input: []int{7}, delete: 5, wantOK: false, want: []int{7}},
+		{name: "first after sorting", input: []int{4, 3, 5}, delete: 3, wantOK: true, want: []int{4, 5}},
+		{name: "middle after sorting", input: []int{5, 3, 4}, delete: 4, wantOK: true, want: []int{3, 5}},
+		{name: "last after sorting", input: []int{5, 3, 4}, delete: 5, wantOK: true, want: []int{3, 4}},
+		{name: "missing", input: []int{3, 4, 5}, delete: 9, wantOK: false, want: []int{3, 4, 5}},
+		{name: "duplicates, only one removed", input: []int{7, 4, 7}, delete: 7, wantOK: true, want: []int{4, 7}},
+		{name: "negative", input: []int{0, -1, 1}, delete: -1, wantOK: true, want: []int{0, 1}},
+		// the dummy head holds MAX_NEGATIVE; delete must never remove it
+		{name: "dummy value, not inserted", input: []int{1, 2}, delete: MAX_NEGATIVE, wantOK: false, want: []int{1, 2}},
+		{name: "dummy value, inserted for real", input: []int{1, MAX_NEGATIVE}, delete: MAX_NEGATIVE, wantOK: true, want: []int{1}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			l := newSortedList(t)
+			for _, v := range tt.input {
+				l.AddNode(v)
+			}
+
+			if got := l.DeleteNode(tt.delete); got != tt.wantOK {
+				t.Errorf("DeleteNode(%d) = %v, want %v", tt.delete, got, tt.wantOK)
+			}
+			checkList(t, &l.LinkedList, tt.want)
+		})
+	}
+}
+
+// after a delete, inserts must still land in sorted order and tail must stay right
+func TestSortedListAddAfterDelete(t *testing.T) {
+	l := newSortedList(t)
+	l.AddNode(7)
+	l.DeleteNode(7) // empty again
+	checkList(t, &l.LinkedList, nil)
+
+	l.AddNode(3)
+	l.AddNode(1)
+	checkList(t, &l.LinkedList, []int{1, 3})
+
+	l.DeleteNode(3) // tail removed: tail moves back to 1
+	l.AddNode(2)
+	checkList(t, &l.LinkedList, []int{1, 2})
+
+	l.DeleteNode(1) // head removed
+	l.AddNode(0)
+	checkList(t, &l.LinkedList, []int{0, 2})
+}
+
 func ExampleSortedList_PrintList() {
 	list, _ := CreateSortedList()
 	for _, v := range []int{3, -1, 2} {
 		list.AddNode(v)
 	}
 	list.PrintList()
-	// Output: -1->2->3->
+	// Output:
+	// len: 3
+	// -1->2->3->
 }

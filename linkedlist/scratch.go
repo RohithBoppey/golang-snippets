@@ -12,7 +12,7 @@ import (
 // all types of linked lists so far are
 var llTypes = []func() (linkedlist.ListInterface, error){
 	linkedlist.CreateLinkedList,
-	linkedlist.CreateSortedList,
+	// linkedlist.CreateSortedList,
 }
 
 // some helper functions
@@ -32,6 +32,15 @@ func searchVal(li linkedlist.ListInterface, val int) {
 	found, pos, steps := li.SearchNode(val)
 	if found {
 		fmt.Printf("Found %v at %v in %v steps\n", val, pos, steps)
+	} else {
+		fmt.Printf("%v not found\n", val)
+	}
+}
+
+func delVal(li linkedlist.ListInterface, val int) {
+	del := li.DeleteNode(val)
+	if del {
+		fmt.Printf("Deleted %v \n", val)
 	} else {
 		fmt.Printf("%v not found\n", val)
 	}
@@ -67,7 +76,10 @@ func main() {
 	// }
 
 	testCases2 := [][]int{
-		{2, 1, 3, 0, -1, 9, 11, -2},
+		// {2, 1, 3, 0, -1, 9, 11, -2},
+		// {3, 4, 5},
+		// {},
+		{3, 1, 5},
 	}
 
 	// create both types using the helper function
@@ -76,9 +88,17 @@ func main() {
 	for _, list := range allLists {
 		list.PrintList()
 
-		searchVal(list, -1)
-		searchVal(list, -2)
-		searchVal(list, 4)
+		// searchVal(list, -1)
+		// searchVal(list, -2)
+		// searchVal(list, 4)
+
+		delVal(list, 3)
+		delVal(list, 1)
+		delVal(list, 5)
+
+		// delVal(list, 4)
+
+		list.PrintList()
 
 	}
 }

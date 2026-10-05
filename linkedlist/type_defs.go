@@ -21,6 +21,9 @@ type ListInterface interface {
 		- how many elements had to be traversed? (this will be equal to location in the start, but after skiplist, this gets drastically reduced)
 	*/
 	SearchNode(val int) (bool, int, int)
+
+	// is the node deleted or not
+	DeleteNode(val int) bool
 }
 
 // max neg value allowed

@@ -16,9 +16,10 @@ func (l *LinkedList) AddNode(val int) {
 }
 
 func (l *LinkedList) AddNodeDirect(n *ListNode) {
-	if l.head == nil {
+	// since dummy is there
+	if l.head.next == nil {
 		// no entries in list
-		l.head = n
+		l.head.next = n
 		l.tail = n
 	} else {
 		l.tail.next = n
@@ -31,7 +32,7 @@ func (l *LinkedList) AddNodeDirect(n *ListNode) {
 func (l *LinkedList) PrintList() {
 	fmt.Printf("len: %d\n", l.length)
 
-	curr := l.head
+	curr := l.head.next
 	for curr != nil {
 		fmt.Printf("%d->", curr.val)
 		curr = curr.next
@@ -42,7 +43,7 @@ func (l *LinkedList) PrintList() {
 // (found?, pos?, steps?)
 func (l *LinkedList) SearchNode(val int) (bool, int, int) {
 	// search from left to right and see if the val exists or not
-	curr := l.head
+	curr := l.head.next
 	pos := 0
 	found := false
 	for curr != nil {
@@ -56,7 +57,64 @@ func (l *LinkedList) SearchNode(val int) (bool, int, int) {
 	return found, pos, pos
 }
 
+// deleted or not?
+func (l *LinkedList) DeleteNode(val int) bool {
+	// find the first node and delete it
+	deleted := false
+
+	if l.head.next == nil {
+		// empty list
+		return false
+	}
+
+	curr, prev := l.head.next, l.head
+
+	if curr.next == nil && curr.val == val {
+		// only node
+		l.head.next = nil
+		l.tail = nil // no nodes left, so no tail either
+		l.length -= 1
+		return true
+	}
+
+	for curr != nil && curr.val != val {
+		prev = curr
+		curr = curr.next
+	}
+
+	if curr == nil {
+		// not found
+		return false
+	}
+
+	// found, so use prev to delete it
+	if curr == l.head {
+		// real head has no prev, so move head forward instead
+		l.head = curr.next
+	} else {
+		prev.next = curr.next
+	}
+
+	if curr == l.tail {
+		// deleted the last node, so prev becomes the new tail
+		l.tail = prev
+	}
+
+	l.length -= 1
+	deleted = true
+
+	return deleted
+}
+
 func CreateLinkedList() (ListInterface, error) {
 	// create an empty linked list
-	return &LinkedList{nil, nil, 0}, nil
+	// always have the dummy node before head
+	newLinkedList := &LinkedList{}
+	node := &ListNode{next: nil, val: MAX_NEGATIVE}
+
+	newLinkedList.head = node
+	newLinkedList.tail = nil
+
+	// create an empty list and return
+	return newLinkedList, nil
 }
