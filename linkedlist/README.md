@@ -11,6 +11,26 @@ O(n) cost of search is visible before skip lists fix it.
 | sorted_list.go | SortedList: sorted insert, dummy head node              |
 | scratch.go     | Playground, excluded from builds (`//go:build ignore`)  |
 
+## The dummy head
+Both lists start with a dummy node that holds no real data. Real values
+start at `head.next`.
+
+```
+            head (dummy)          real nodes                    tail
+                 │                                                │
+                 ▼                                                ▼
+            ┌─────────┐      ┌───┐      ┌───┐      ┌───┐      ┌───┐
+            │  dummy  │ ───▶ │ 3 │ ───▶ │ 7 │ ───▶ │12 │ ───▶ │19 │ ───▶ nil
+            └─────────┘      └───┘      └───┘      └───┘      └───┘
+                         pos:  0          1          2          3
+
+empty list:  head ──▶ [ dummy ] ──▶ nil        tail = nil
+```
+
+Why: every real node, including the first, has a node before it. So
+"delete the first node" works like any other delete: `prev.next = curr.next`,
+with no special case for moving `head`.
+
 ## SearchNode returns (found, pos, steps)
 - pos: 0-based index of the first match; on a miss, the list length
 - steps: nodes walked past. Equal to pos for now; the skip list will shrink it
