@@ -1,5 +1,18 @@
 package skiplist
 
+// each node contains address of it's next pointer but for every level
+/*
+[3, 7, 12, 19, 25, 31, 40, 52]
+level 0: dummy -> [3, 7, 12, 19, 25, 31, 40, 52]
+level 1: dummy -> [3, 12, 25, 40]
+level 2: dummy -> [3, 25]
+
+the dummy head is on every level, real nodes only on their own levels:
+dummy - next = [->3, ->3, ->3]
+3     - next = [->7, ->12, ->25]
+7     - next = [->12]
+*/
+
 type ListNode struct {
 	val  int
 	next []*ListNode
