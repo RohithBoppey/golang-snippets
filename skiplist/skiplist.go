@@ -21,6 +21,7 @@ func printHelper(l *ListNode, level int) {
 
 func (h *SkipList) PrintList() {
 	// print level wise in this, only the levels in use
+	fmt.Println("Levels:", h.level)
 	for curr := 0; curr < h.level; curr += 1 {
 		fmt.Printf("L%v: ", curr)
 		printHelper(h.head.next[curr], curr) // skip the dummy, start from first real node
@@ -58,6 +59,33 @@ func (h *SkipList) AddNode(val int) {
 		h.level = levels
 	}
 	h.count += 1
+}
+
+func (h *SkipList) Search(val int) (bool, int) {
+	// start from the dummy, so the first real node gets compared too
+	currp := h.head
+
+	found := false
+	steps := 0
+
+	// outer loop: levels, from the top one down to level 0
+	for curr_level := h.level - 1; curr_level >= 0; curr_level -= 1 {
+		// inner loop: keep moving right while the next one is still smaller than val
+		// when it's nil or >= val, just drop down a level (the outer loop does that)
+		for currp.next[curr_level] != nil && currp.next[curr_level].val < val {
+			// move to the next one
+			currp = currp.next[curr_level]
+			steps += 1
+		}
+	}
+
+	// now currp is the node just before where val would be on level 0
+	// so check the next one only once
+	if currp.next[0] != nil && currp.next[0].val == val {
+		found = true
+	}
+
+	return found, steps
 }
 
 func CreateSkipList() *SkipList {
